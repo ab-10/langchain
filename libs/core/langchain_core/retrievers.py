@@ -211,7 +211,7 @@ class BaseRetriever(RunnableSerializable[RetrieverInput, RetrieverOutput], ABC):
         return ls_params
 
     def invoke(
-        self, input: str, config: Optional[RunnableConfig] = None, **kwargs: Any
+        self, input: str, preprocessor: Runnable, config: Optional[RunnableConfig] = None, **kwargs: Any
     ) -> list[Document]:
         """Invoke the retriever to get relevant documents.
 
@@ -219,6 +219,7 @@ class BaseRetriever(RunnableSerializable[RetrieverInput, RetrieverOutput], ABC):
 
         Args:
             input: The query string.
+            preprocessor: Preprocessor to use before invoking the retriever.
             config: Configuration for the retriever. Defaults to None.
             kwargs: Additional arguments to pass to the retriever.
 
@@ -233,6 +234,7 @@ class BaseRetriever(RunnableSerializable[RetrieverInput, RetrieverOutput], ABC):
         """
         from langchain_core.callbacks.manager import CallbackManager
 
+        input = preprocessor.invoke(input)
         config = ensure_config(config)
         inheritable_metadata = {
             **(config.get("metadata") or {}),
